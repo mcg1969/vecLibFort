@@ -47,7 +47,22 @@ typedef struct c_double_ {
 
 #ifdef VECLIBFORT_INTERPOSE
 
-#define U(x) x ## _
+/*
+ * INTERPOSING MODE
+ *
+ * In this mode, dyld is instructed to preload this library even before the
+ * executable itself. It reads the __DATA.__interpose section of the library
+ * for the interpose information, which it uses to swap out the offending
+ * BLAS/LAPACK functions with our replacements. Because vecLib provides two
+ * aliases for each function---one with a trailing underscore, and one
+ * without---we need two interpose records for each replacement.
+ *
+ * For instance, for "sdot", we define a static function
+ *    static float my_sdot( const int* N, const float* X, const int* incX )
+ * add interpose data to signify two substitutions:
+ *    sdot_ -> my_sdot
+ *    sdot  -> my_sdot
+ */
 
 #define INTERPOSE(name) \
 __attribute__((used)) interpose_t interpose_ ## name [] \
@@ -74,6 +89,32 @@ static c_ ## type my_ ## name ( VOIDA(n) ) \
 INTERPOSE(name)
 
 #else
+
+/*
+ * DYNAMIC SUBSTITUTION MODE
+ * 
+ * In this mode, we give our functions identical names, and rely on link
+ * order to ensure that these take precedence over those declared in vecLib.
+ * Thus whenever the main code attempts to call one of the covered functions,
+ * it will be directed to one of our wrappers instead.
+ *
+ * Because vecLib provides two aliases for each function---one with a
+ * trailing underscore, and one without---we actually need two separate
+ * replacement functions (at least until we can figure out how to do aliases
+ * cleanly in clang.) Each pair of replacements controls a single static
+ * pointer to the replacement function. On the first invocation of either,
+ * this pointer is retrieved using a dlsym() command.
+ *
+ * For instance, for "sdot", we define two functions
+ *    float sdot_( const int* N, const float* X, const int* incX )
+ *    float sdot ( const int* N, const float* X, const int* incX )
+ * On the first invocation of either, the "sdot_" symbol from vecLib is
+ * retrieved using the dlsym() command and stored in
+ *    static void* fp_dot;
+ * In theory, we could create just one replacement with two aliases, but 
+ * clang has thus far been uncooperative. Any assistance on this matter would
+ * be appreciated. 
+ */
 
 #include <dlfcn.h>
 #include <stdio.h>
@@ -121,7 +162,7 @@ float fname( VOIDA(n) ) \
 
 #define D2F_CALL(name,n) \
 typedef double (*ft_ ## name)( VOIDS(n) ); \
-static ft_ ## name *fp_ ## name = 0; \
+static void *fp_ ## name = 0; \
 D2F_CALL_(name,name,n) \
 D2F_CALL_(name ## _,name,n)
 
@@ -129,7 +170,6 @@ D2F_CALL_(name ## _,name,n)
 c_ ## type fname( VOIDA(n) ) \
 { \
   c_ ## type cplx; \
-  static void* func = 0; \
   DEBUG_D( #name "_" ) \
   if ( !fp_ ## name ) fp_ ## name = loadsym( #name "_" ); \
   ((ft_ ## name)fp_ ## name)( &cplx, PARAM(n) ); \
@@ -138,7 +178,7 @@ c_ ## type fname( VOIDA(n) ) \
 
 #define CPLX_CALL(type,name,n) \
 typedef void (*f_ ## name)( VOIDS(INC(n)) ); \
-static ft_ ## name *fp_ ## name = 0; \
+static void *fp_ ## name = 0; \
 CPLX_CALL_(type,name,name,n) \
 CPLX_CALL_(type,name ## _,name,n)
 
@@ -195,73 +235,24 @@ CPLX_CALL(double,zdotc,5)
 
 #else
 
-float sdsdot_( const int* N, const float* alpha, const float* X, const int* incX, const float* Y, const int* incY )
-{
-  DEBUG_S( "sdsdot" )
-  return cblas_sdsdot( *N, *alpha, X, *incX, Y, *incY );
-}
+/*
+ * STATIC SUBSTITUTION MODE
+ * 
+ * For BLAS functions, we have access to CBLAS versions of each function.
+ * So the hoops we need to jump through to resolve the name clashes in the
+ * dynamic substitution mode can be avoided. Instead, we simply create the
+ * replacement functions to call the CBLAS counterparts instead.
+ *
+ * To void duplicating code, we've stored these functions in "static.h",
+ * and load them twice---once for the functions with trailing underscores
+ * (e.g., "sdot_"), and once without (e.g., "sdot"). In theory, we could
+ * create just one replacement with two aliases, but clang has thus far been
+ * uncooperative. Any assistance on this matter would be appreciated.
+ */
 
-float sdot_( const int* N, const float* X, const int* incX, const float* Y, const int* incY )
-{
-  DEBUG_S( "sdot" )
-  return cblas_sdot( *N, X, *incX, Y, *incY );
-}
-
-float snrm2_( const int* N, const float* X, const int* incX )
-{
-  DEBUG_S( "snrm2" )
-  return cblas_snrm2( *N, X, *incX );
-}
-
-float sasum_( const int* N, const float *X, const int* incX )
-{
-  DEBUG_S( "sasum" )
-  return cblas_sasum( *N, X, *incX );
-}
-
-c_float cdotu_( const int* N, const void* X, const int* incX, const void* Y, const int* incY )
-{
-  DEBUG_S( "cdotu" )
-  c_float ans;
-  cblas_cdotu_sub( *N, X, *incX, Y, *incY, &ans );
-  return ans;
-}
-
-c_float cdotc_( const int* N, const void* X, const int* incX, const void* Y, const int* incY )
-{
-  DEBUG_S( "cdotc" )
-  c_float ans;
-  cblas_cdotc_sub( *N, X, *incX, Y, *incY, &ans );
-  return ans;
-}
-
-float scnrm2_( const int* N, const void* X, const int* incX )
-{
-  DEBUG_S( "scnrm2" )
-  return cblas_scnrm2( *N, X, *incX );
-}
-
-float scasum_( const int* N, const void *X, const int* incX )
-{
-  DEBUG_S( "scasum" )
-  return cblas_scasum( *N, X, *incX );
-}
-
-c_double zdotu_( const int* N, const void* X, const int* incX, const void* Y, const int* incY )
-{
-  DEBUG_S( "zdotu" )
-  c_double ans;
-  cblas_zdotu_sub( *N, X, *incX, Y, *incY, &ans );
-  return ans;
-}
-
-c_double zdotc_( const int* N, const void* X, const int* incX, const void* Y, const int* incY )
-{
-  DEBUG_S( "zdotc" )
-  c_double ans;
-  cblas_zdotc_sub( *N, X, *incX, Y, *incY, &ans );
-  return ans;
-}
+#include "static.h"
+#define ADD_UNDERSCORE
+#include "static.h"
 
 #endif
 

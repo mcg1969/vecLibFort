@@ -91,7 +91,7 @@ Package libraries like Homebrew, MacPorts, Fink, etc. can compile and install
 vecLibFort as a dynamic library. I haven't taken the trouble to build a 
 ``Makefile``, but this single command should work:
 
-    clang -shared -o libvecLibFort.dylib vecLibFort.c \
+    clang -shared -O -o libvecLibFort.dylib vecLibFort.c \
         -framework vecLib -install_name <path>/libvecLibFort.dylib
 
 where ``<path>`` is where you intend to install the library. Then, when compiling
@@ -116,7 +116,7 @@ can come in quite handy. The OS makes it possible to specify a library to be
 functions with alternate versions. To take advantage of this, we need to build
 a new shared library with the -DINTERPOSE flag set:
 
-    clang -shared -DVECLIBFORT_INTERPOSE -o libvecLibFortI.dylib vecLibFort.c \
+    clang -shared -O -DVECLIBFORT_INTERPOSE -o libvecLibFortI.dylib vecLibFort.c \
         -framework vecLib -install_name <path>/libvecLibFortI.dylib
 
 Armed with this library, you can invoke the preloading system using the
