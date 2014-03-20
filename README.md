@@ -89,14 +89,24 @@ functions directly from vecLib to perform its computations.
 
 Package libraries like Homebrew, MacPorts, Fink, etc. can compile and install 
 vecLibFort as a dynamic library. I haven't taken the trouble to build a 
-``Makefile``, but this single command should work:
+``Makefile``, but this single command will work:
 
     clang -shared -O -o libvecLibFort.dylib vecLibFort.c \
-        -framework vecLib -install_name <path>/libvecLibFort.dylib
+        -Wl,-reexport_framework -Wl,vecLib -install_name <path>/libvecLibFort.dylib
 
-where ``<path>`` is where you intend to install the library. Then, when compiling
-a project containing FORTRAN code that requires BLAS and LAPACK, replace any 
-instances of ``-framework vecLib`` with command ``-L<path> -lvecLibFort``.
+where ``<path>`` is where you intend to install the library. The use of
+``-reexport_framework`` instead of ``-framework`` allows vecLibFort to serve
+as a complete replacement for vecLib by exporting its full symbol list.
+Therefore, to use this library, you must simply replace any instances of
+``-framework vecLib`` in your build steps with ``-lvecLibFort``, adding an
+``-L<path>`` if you installed it in a non-standard location.
+
+(*Technical note*: you could also just use ``-framework`` instead of
+``-reexport_framework``, and then include both link commands when compiling
+the executable. I chose this approach because I had some issues with link
+order when linking a project with multiple dependencies that relied separately
+on BLAS and LAPACK. For all I know, I was making a silly mistake, but the
+``reexport_framework`` approach smoothed everything out.)
 
 This approach should operate identically to direct inclusion; vecLibFort will
 override and replace the offending commands by nature of its link order.
@@ -119,6 +129,7 @@ a new shared library with the -DINTERPOSE flag set:
     clang -shared -O -DVECLIBFORT_INTERPOSE -o libvecLibFortI.dylib vecLibFort.c \
         -framework vecLib -install_name <path>/libvecLibFortI.dylib
 
+(There is no point in using ``-reexport_framework`` here.)
 Armed with this library, you can invoke the preloading system using the
 [``DYLD_INSERT_LIBRARIES`` environment variable][DYLD]. For instance,
 
@@ -158,10 +169,39 @@ most certainly not. The inspirations include:
 
 ### License
 
+##### English
+
 License, schmicense. Do with this what you will. I would appreciate it if you
 would give me credit, as I have attempted to do in the previous section. But
 I'm not going to get bent out of shape about it. Large piles of cash are
-welcome, as are simple emails of gratitude.
+welcome, as are simple emails of gratitude, or ([unlicensed][]) pull requests!
+
+##### Legalese
+
+> This is free and unencumbered software released into the public domain.
+> 
+> Anyone is free to copy, modify, publish, use, compile, sell, or
+> distribute this software, either in source code form or as a compiled
+> binary, for any purpose, commercial or non-commercial, and by any
+> means.
+> 
+> In jurisdictions that recognize copyright laws, the author or authors
+> of this software dedicate any and all copyright interest in the
+> software to the public domain. We make this dedication for the benefit
+> of the public at large and to the detriment of our heirs and
+> successors. We intend this dedication to be an overt act of
+> relinquishment in perpetuity of all present and future rights to this
+> software under copyright law.
+> 
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+> IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+> OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+> ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+> OTHER DEALINGS IN THE SOFTWARE.
+> 
+> For more information, please refer to <http://unlicense.org/>
 
 [vecLib]:https://developer.apple.com/library/mac/documentation/Performance/Conceptual/vecLib/Reference/reference.html
 [GNU Fortran]:http://gcc.gnu.org/fortran/
@@ -176,4 +216,6 @@ welcome, as are simple emails of gratitude.
 [Boost]:http://www.boost.org/doc/libs/1_55_0/libs/preprocessor/doc/index.html 
 [OpenBLAS]:http://www.openblas.net/
 [MKL]:http://software.intel.com/en-us/intel-mkl
+[unlicensed]:http://unlicense.org
+
 
