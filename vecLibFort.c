@@ -201,7 +201,7 @@ float sdsdot_( const int* N, const float* alpha, const float* X, const int* incX
   return cblas_sdsdot( *N, *alpha, X, *incX, Y, *incY );
 }
 
-float sdot( const int* N, const float* X, const int* incX, const float* Y, const int* incY )
+float sdot_( const int* N, const float* X, const int* incX, const float* Y, const int* incY )
 {
   DEBUG_S( "sdot" )
   return cblas_sdot( *N, X, *incX, Y, *incY );
