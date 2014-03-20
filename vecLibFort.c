@@ -221,16 +221,16 @@ float sasum_( const int* N, const float *X, const int* incX )
 
 c_float cdotu_( const int* N, const void* X, const int* incX, const void* Y, const int* incY )
 {
-  c_float ans;
   DEBUG_S( "cdotu" )
+  c_float ans;
   cblas_cdotu_sub( *N, X, *incX, Y, *incY, &ans );
   return ans;
 }
 
 c_float cdotc_( const int* N, const void* X, const int* incX, const void* Y, const int* incY )
 {
-  c_float ans;
   DEBUG_S( "cdotc" )
+  c_float ans;
   cblas_cdotc_sub( *N, X, *incX, Y, *incY, &ans );
   return ans;
 }
@@ -243,22 +243,22 @@ float scnrm2_( const int* N, const void* X, const int* incX )
 
 float scasum_( const int* N, const void *X, const int* incX )
 {
-  DEBUG( "Entering static %s replacement\n", "scasum" )
+  DEBUG_S( "scasum" )
   return cblas_scasum( *N, X, *incX );
 }
 
 c_double zdotu_( const int* N, const void* X, const int* incX, const void* Y, const int* incY )
 {
+  DEBUG_S( "zdotu" )
   c_double ans;
-  DEBUG( "Entering static %s replacement\n", "zdotu" )
   cblas_zdotu_sub( *N, X, *incX, Y, *incY, &ans );
   return ans;
 }
 
 c_double zdotc_( const int* N, const void* X, const int* incX, const void* Y, const int* incY )
 {
+  DEBUG_S( "zdotc" )
   c_double ans;
-  DEBUG( "Entering static %s replacement\n", "zdotc" )
   cblas_zdotc_sub( *N, X, *incX, Y, *incY, &ans );
   return ans;
 }

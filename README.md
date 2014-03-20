@@ -9,20 +9,22 @@ libraries and FORTRAN code compiled with modern compilers.
 You *will* want this library if 
 
   * you are compiling your code directly from FORTRAN source; *and*
-  * you already use BLAS and/or LAPACK for your linear algebra; *and*
+  * you use Apple's BLAS and/or LAPACK for your linear algebra; *and*
   * you use single-precision or complex arithmetic. 
 
 You *will not* need this library if 
 
-  * you use some other linear algebra package;
+  * you use some other linear algebra package; *or*
   * you call BLAS and LAPACK only from C; *or*
+  * you use an alternative BLAS/LAPACK package ([OpenBlas][],[MKL][]); *or*
   * you rely only on double-precision real arithmetic.
 
-You *may* want this library if you are using a *pre-compiled* program or
-library that seems to exhibit bugs related to the incompatibilities described
-in the [next](#background) section. It is quite possible this code can be used
-to fix the problem *without recompilation*. See the section
-[Preloaded (interposing) library](#preloaded) for more details.
+You *may* want this library if 
+
+  * you are running a *pre-compiled* program, or linking to a *pre-compiled*
+    library, that seems to exhibit bugs related to the incompatibilities
+    described in the [next](#background) section. See the section
+    [Preloaded (interposing) library](#preloaded) for more details.
 
 <a name="background"></a>
 ### Background
@@ -124,8 +126,11 @@ Armed with this library, you can invoke the preloading system using the
 
 will run the program ``program`` but with the BLAS and LAPACK calls corrected.
 
-Of course, *you should not use this* if the program or library *already* uses
-the F2C calling conventions correctly: *you will break the program*.
+Of course, this may not work---it may be that the bugs you are seeing are not
+in fact caused by the specific issues addressed by vecLibFort. Or I might not
+have implemented something correctly. (Bug reports are welcome.) And you
+should *not* use this if the program or library *already* uses the F2C 
+calling conventions correctly; you *will* break it.
 
 ### Inspirations
 
@@ -169,3 +174,6 @@ welcome, as are simple emails of gratitude.
 [Google]:https://www.google.com/search?q=DYLD_INSERT_LIBRARIES
 [Cloak]:https://github.com/pfultz2/Cloak/blob/master/cloak.h
 [Boost]:http://www.boost.org/doc/libs/1_55_0/libs/preprocessor/doc/index.html 
+[OpenBLAS]:http://www.openblas.net/
+[MKL]:http://software.intel.com/en-us/intel-mkl
+
