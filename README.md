@@ -6,25 +6,26 @@ vecLibFort is lightweight but flexible "shim" designed to correct a
 small number of incompatibilities between Apple's supplied BLAS and LAPACK
 libraries and FORTRAN code compiled with modern compilers. 
 
-You *will* want this library if 
+You *will* want this code if you are...
 
-  * you are compiling your code directly from FORTRAN source; *and*
-  * you use Apple's BLAS and/or LAPACK for your linear algebra; *and*
-  * you use single-precision or complex arithmetic. 
+  * compiling your code directly from FORTRAN source; *and*
+  * using Apple's BLAS and/or LAPACK for your linear algebra; *and*
+  * using single-precision or complex arithmetic. 
 
-You *will not* need this library if 
+You *will not* need this code if you are...
 
-  * you use some other linear algebra package; *or*
-  * you call BLAS and LAPACK only from C; *or*
-  * you use an alternative BLAS/LAPACK package ([OpenBlas][],[MKL][]); *or*
-  * you rely only on double-precision real arithmetic.
+  * using some other linear algebra package; *or*
+  * calling BLAS and LAPACK only from C; *or*
+  * using an alternative BLAS/LAPACK package ([OpenBlas][],[MKL][]); *or*
+  * using only on double-precision real arithmetic.
 
-You *may* want this library if 
+You *may* want this code if you are...
 
-  * you are running a *pre-compiled* program, or linking to a *pre-compiled*
-    library, that seems to exhibit bugs related to the incompatibilities
-    described in the [next](#background) section. See the section
-    [Preloaded (interposing) library](#preloaded) for more details.
+  * running a *pre-compiled* program, or linking to a *pre-compiled*
+    library, that seems to exhibit bugs described in the [next](#background)
+    section. See the section [Preloaded (interposing) library](#preloaded) 
+    for more details on how you may be able to fix these programs without
+    recompilation.
 
 <a name="background"></a>
 ### Background
@@ -35,13 +36,11 @@ algebra. Because there remains quite a bit of useful FORTRAN code out there
 that in turn depend on BLAS and LAPACK, this is certainly a welcome provision
 from Apple.
 
-Unfortunately, those FORTRAN bindings follow an [F2C][]-style argument passing
-convention. Later versions of [GNU Fortran][], on the other hand, default to a
-[different, more C-friendly convention][gnufarg]. Most subroutines and 
-functions work without modification; in particular, any code that relies solely 
-on double-precision *real* arithmetic is fine. If that means you, feel free
-to stop reading now. There are two specific types of incompatibilities, 
-however, that prove fatal:
+Unfortunately, those FORTRAN bindings follow an [F2C][]-style return value
+convention, while [GNU Fortran][] uses a [different convention][gnufarg]. Most
+subroutines and functions work without modification; in particular, if you 
+rely solely on double-precision *real* arithmetic, you are fine. For single
+precision or complex arithmetic, there are two fatal incompatibilities:
 
 * Functions whose FORTRAN specifications call for returning single-precision
   real values, such as ``sdot_`` and ``snrm2_``, actually return 
@@ -59,20 +58,19 @@ incompatibilities *must* be addressed or incorrect results and crashes can
 occur. In some projects, these errors go uncorrected, because the use cases
 that exercise them are uncommon.
 
-One potential solution is to force GNU Fortran to adopt the older, F2C-style
-calling convention, using the ``-ff2c`` flag. However, there seem to be a few 
-incompatibilities that remain on 64-bit platforms, perhaps due to differences
-in integer sizes.  (Further information about these differences would be 
-appreciated.) And it seems excessive to require entire projects to be compiled
-with ``-ff2c``. GNU Fortran presumably has a performance-related reason for 
-choosing a different calling convention.
+One solution is to force GNU Fortran to adopt the older, F2C-style return
+value convention, using the ``-ff2c`` flag. If that solution is sufficient
+for you, then I encourage you to adopt it. Unfortunately, this may not be
+possible if you depend on other libraries that are compiled without the flag,
+if any surrounding C code assumes the GNU Fortran convention.
 
-Another option, then, is to create a lightweight "shim" that stands between
-each problematic BLAS/LAPACK call and the Fortran code that calls it, 
-performing any necessary translation between the calling formats. That
-is exactly what this code is designed to do. This code can also be used
-to correct existing programs *without recompilation* using OS X's "preload
-library" facility.
+The approach taken by vecLibFort is to provide a thin translation layer
+between the F2C and GFortran worlds, for the few functions where there is a
+difference. This is simple for BLAS: just call vecLib's CBLAS interface
+from a FORTRAN-friendly wrapper. For LAPACK, the goal is a bit more complex;
+since vecLib provides only the FORTRAN interface each function and its
+replacement will have the same name. We have employed some dlopen/dlsym
+trickery to avoid name conflicts.
 
 ### Using vecLibFort
 
@@ -80,10 +78,11 @@ This code can be used in one of three ways.
 
 #### Direct inclusion
 
-For new projects, feel free to include the source in the project itself, 
-and link wtih ``-framework vecLib`` as usual. Name conflicts will be resolved 
-in favor of vecLibFort, which will in turn load the replaced versions of
-functions directly from vecLib to perform its computations.
+For new projects, feel free to include ``vecLibFort.c``, ``static.h``, and
+``cloak.h`` into your project source, and link with ``-framework vecLib``
+as usual. Name conflicts will be resolved favor of vecLibFort, which will
+in turn load the replaced versions of functions directly from vecLib
+to perform its computations.
 
 #### Standard dynamic library
 
@@ -164,7 +163,7 @@ most certainly not. The inspirations include:
   term [``DYLD_INSERT_LIBRARIES``][Google] to find a wealth of material.
 * In order to make the primary source file as compact as possible, this code
   employs a simple preprocessor library by Paul Fultz II called [Cloak][]. The
-  [Boost Preprocessor Library][Boost] is perhaps the more well known example
+  [Boost Preprocessor Library][Boost] is perhaps a more well known example
   of this kind of work, but it is far more complex than needed in this case.
 
 ### License
@@ -217,5 +216,6 @@ welcome, as are simple emails of gratitude, or ([unlicensed][]) pull requests!
 [OpenBLAS]:http://www.openblas.net/
 [MKL]:http://software.intel.com/en-us/intel-mkl
 [unlicensed]:http://unlicense.org
+[blasbug]:http://www.macresearch.org/lapackblas-fortran-106
 
 
