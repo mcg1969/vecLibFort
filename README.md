@@ -153,9 +153,9 @@ most certainly not. The inspirations include:
   interface, the substitutions can be made statically. We have extended this 
   approach to cover all of the relevant BLAS calls, and implemented it in C.
 * The dynamic substitution approach is heavily inspired by the method used by
-  [GNU Octave](https://www.gnu.org/software/octave/). You can see the
-  relevant source code from Octave [here][blaswrap]. vecLibFort differs from
-  Octave in that it resolves the replacements lazily, eliminating the need for
+  [GNU Octave](https://www.gnu.org/software/octave/), as contributed by Jarno
+  Rajahaime. You can see the [here][blaswrap]. vecLibFort differs from Octave
+  in that it resolves the replacements lazily, eliminating the need for
   lookup tables and (hopefully) improving performance. It also implements the 
   full set of BLAS/LAPACK replacements, whereas Octave replaces only a subset.
 * The interposing implementation is explained in a variety of places on the 

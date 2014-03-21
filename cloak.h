@@ -2,6 +2,9 @@
  * Paul Fultz II's "Cloak": a mini preprocessor library
  * See: https://github.com/pfultz2/Cloak/blob/master/cloak.h
  * (Why not use Boost.Preprocessor? This was all I needed!)
+ * We're working on clarifying the copright for this one. The
+ * original repository has no mention of a copyright, but we
+ * have reached out to the owner.
  */
 
 #define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
