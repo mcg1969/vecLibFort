@@ -1,10 +1,11 @@
-## vecLibFort: Full GFORTRAN compatibility for Apple's vecLib BLAS/LAPACK
+## A GNU Fortran interface to Apple's vecLib BLAS/LAPACK
 
 ### Introduction
 
-vecLibFort is lightweight but flexible "shim" designed to correct a
-small number of incompatibilities between Apple's supplied BLAS and LAPACK
-libraries and FORTRAN code compiled with modern compilers. 
+vecLibFort is lightweight but flexible "shim" designed to rectify
+the incompatibilities between the vecLib BLAS and LAPACK libraries
+shipped with Mac OS X and FORTRAN code compiled with modern compilers
+such as [GNU Fortran][].
 
 You *will* want this code if you are...
 
@@ -30,7 +31,7 @@ You *may* want this code if you are...
 <a name="background"></a>
 ### Background
 
-[Apple's vecLib framework][vecLib] ships with both C and FORTRAN bindings for
+[Apple's vecLib framework][vecLib] provides both C and FORTRAN bindings for
 BLAS and LAPACK, the de-facto standard libraries for dense numerical linear
 algebra. Because there remains quite a bit of useful FORTRAN code out there
 that in turn depend on BLAS and LAPACK, this is certainly a welcome provision
@@ -61,16 +62,19 @@ that exercise them are uncommon.
 One solution is to force GNU Fortran to adopt the older, F2C-style return
 value convention, using the ``-ff2c`` flag. If that solution is sufficient
 for you, then I encourage you to adopt it. Unfortunately, this may not be
-possible if you depend on other libraries that are compiled without the flag,
-if any surrounding C code assumes the GNU Fortran convention.
+possible if there is other code or other libraries that you rely upon that
+assume the default GNU Fotran convention. And don't forget to rewrite your
+C code according to the F2C return value conventions.
 
 The approach taken by vecLibFort is to provide a thin translation layer
 between the F2C and GFortran worlds, for the few functions where there is a
-difference. This is simple for BLAS: just call vecLib's CBLAS interface
-from a FORTRAN-friendly wrapper. For LAPACK, the goal is a bit more complex;
-since vecLib provides only the FORTRAN interface each function and its
-replacement will have the same name. We have employed some dlopen/dlsym
-trickery to avoid name conflicts.
+difference. For BLAS, this is simply a matter of wrapping Apple's CBLAS
+calls in a FORTRAN-friendly wrapper. For LAPACK, a bit of dlopen/dlsym
+trickery is required to avoid name conflicts.
+
+Still another option is to use a different BLAS and LAPACK library, such
+as [MKL][] or [OpenBlas][]. I am sure there are good arguments to be made
+for all three options.
 
 ### Using vecLibFort
 
@@ -78,11 +82,11 @@ This code can be used in one of three ways.
 
 #### Direct inclusion
 
-For new projects, feel free to include ``vecLibFort.c``, ``static.h``, and
-``cloak.h`` into your project source, and link with ``-framework vecLib``
-as usual. Name conflicts will be resolved favor of vecLibFort, which will
-in turn load the replaced versions of functions directly from vecLib
-to perform its computations.
+For new projects, feel free to add ``vecLibFort.c``, ``static.h``, and
+``cloak.h`` to your project, and link with ``-framework vecLib`` as usual.
+Name conflicts will be resolved favor of the statically linked vecLibFor, 
+which will in turn load the replaced versions of functions directly from 
+vecLib to perform its computations.
 
 #### Standard dynamic library
 
@@ -217,5 +221,4 @@ welcome, as are simple emails of gratitude, or ([unlicensed][]) pull requests!
 [MKL]:http://software.intel.com/en-us/intel-mkl
 [unlicensed]:http://unlicense.org
 [blasbug]:http://www.macresearch.org/lapackblas-fortran-106
-
 
