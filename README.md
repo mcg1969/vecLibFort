@@ -18,7 +18,7 @@ You *will not* need this code if you are...
   * using some other linear algebra package; *or*
   * calling BLAS and LAPACK only from C; *or*
   * using an alternative BLAS/LAPACK package ([OpenBlas][],[MKL][]); *or*
-  * using only on double-precision real arithmetic.
+  * using only double-precision real arithmetic.
 
 You *may* want this code if you are...
 
@@ -78,44 +78,30 @@ for all three options.
 
 ### Using vecLibFort
 
-This code can be used in one of three ways.
+This code can be used in one of three ways, and the included ``Makefile``
+builds all three for you. The only variable you may want to modify is the
+``PREFIX`` variable, which determines the install location ``$(PREFIX)/lib``.
 
-#### Direct inclusion
+#### Dynamic library: ``libvecLibFort.dylib``
+
+The most straightforward way to use ``vecLibFort`` is by linking with the 
+standard dynamic library using ``-lvecLibFort``. Of course, if you installed
+the library in a non-standard location, you will need an ``-L<path>`` linker
+flag as well.
+
+If you use this apporach, you do *not* need to add ``-framework vecLib``
+as well. That is because vecLibFort is built to re-export all of vecLib's
+symbols, even those it does not "fix". Thus it serves as a *full replacement*
+for vecLib.
+
+#### Static library / direct inclusion: ``libvecLibFort.a``
 
 For new projects, feel free to add ``vecLibFort.c``, ``static.h``, and
-``cloak.h`` to your project, and link with ``-framework vecLib`` as usual.
-Name conflicts will be resolved favor of the statically linked vecLibFor, 
-which will in turn load the replaced versions of functions directly from 
-vecLib to perform its computations.
-
-#### Standard dynamic library
-
-Package libraries like Homebrew, MacPorts, Fink, etc. can compile and install 
-vecLibFort as a dynamic library. I haven't taken the trouble to build a 
-``Makefile``, but this single command will work:
-
-    clang -shared -O -o libvecLibFort.dylib vecLibFort.c \
-        -Wl,-reexport_framework -Wl,vecLib -install_name <path>/libvecLibFort.dylib
-
-where ``<path>`` is where you intend to install the library. The use of
-``-reexport_framework`` instead of ``-framework`` allows vecLibFort to serve
-as a complete replacement for vecLib by exporting its full symbol list.
-Therefore, to use this library, you must simply replace any instances of
-``-framework vecLib`` in your build steps with ``-lvecLibFort``, adding an
-``-L<path>`` if you installed it in a non-standard location.
-
-(*Technical note*: you could also just use ``-framework`` instead of
-``-reexport_framework``, and then include both link commands when compiling
-the executable. I chose this approach because I had some issues with link
-order when linking a project with multiple dependencies that relied separately
-on BLAS and LAPACK. For all I know, I was making a silly mistake, but the
-``reexport_framework`` approach smoothed everything out.)
-
-This approach should operate identically to direct inclusion; vecLibFort will
-override and replace the offending commands by nature of its link order.
+``cloak.h`` to your project, or link with the static library. You will also
+need to link ``-framework vecLib``.
 
 <a name="preloaded"></a>
-#### Preloaded (interposing) library
+#### Preloaded (interposing) library: ``libvecLibFortI.dylib``
 
 Suppose you have a program that is already compiled, but which apparently 
 exhibits the errors discussed herein. Or perhaps you are using a precompiled
@@ -126,17 +112,16 @@ can alter the linking information of a dynamic library, I bow to your skill.)
 In these cases, there is a *preload* feature of Mac OSX's ``dyld`` system that
 can come in quite handy. The OS makes it possible to specify a library to be
 *preloaded* before the application, with a list of instructions to replace
-functions with alternate versions. To take advantage of this, we need to build
-a new shared library with the -DINTERPOSE flag set:
+functions with alternate versions, a process known as *interposing*. The
+source file ``vecLibFort.c`` includes this interposing code, but it is
+wrapped with ``#ifdef VECLIBFORT_INTERPOSE`` to avoid clashing with the 
+non-interposing code.
 
-    clang -shared -O -DVECLIBFORT_INTERPOSE -o libvecLibFortI.dylib vecLibFort.c \
-        -framework vecLib -install_name <path>/libvecLibFortI.dylib
+To use this library, you must add the full path to ``libvecLibFortI.dylib``
+to the [``DYLD_INSERT_LIBRARIES`` environment variable][DYLD]. For instance,
+if it has been installed in the default location, the command
 
-(There is no point in using ``-reexport_framework`` here.)
-Armed with this library, you can invoke the preloading system using the
-[``DYLD_INSERT_LIBRARIES`` environment variable][DYLD]. For instance,
-
-    DYLD_INSERT_LIBRARIES=<path>/libvecLibFortI.dylib program
+    DYLD_INSERT_LIBRARIES=/usr/local/lib/libvecLibFortI.dylib program
 
 will run the program ``program`` but with the BLAS and LAPACK calls corrected.
 
@@ -174,37 +159,40 @@ most certainly not. The inspirations include:
 
 ##### English
 
-License, schmicense. Do with this what you will. I would appreciate it if you
-would give me credit, as I have attempted to do in the previous section. But
-I'm not going to get bent out of shape about it. Large piles of cash are
-welcome, as are simple emails of gratitude, or ([unlicensed][]) pull requests!
+I've released this under the [Boost Software License][boost]. So do whatever
+you wish with it. You do not have to redistribute the source code; but if you
+do, you must include the license with it.
+
+If you do use this in your projects, I would appreciate it if you would give 
+me credit, as I have attempted to do in the previous section. But I'm not 
+going to get bent out of shape about it. Large piles of cash are welcome, as 
+are simple emails of gratitude, or pull requests!
 
 ##### Legalese
 
-> This is free and unencumbered software released into the public domain.
+> Boost Software License - Version 1.0 - August 17th, 2003
 > 
-> Anyone is free to copy, modify, publish, use, compile, sell, or
-> distribute this software, either in source code form or as a compiled
-> binary, for any purpose, commercial or non-commercial, and by any
-> means.
+> Permission is hereby granted, free of charge, to any person or organization
+> obtaining a copy of the software and accompanying documentation covered by
+> this license (the "Software") to use, reproduce, display, distribute,
+> execute, and transmit the Software, and to prepare derivative works of the
+> Software, and to permit third-parties to whom the Software is furnished to
+> do so, all subject to the following:
 > 
-> In jurisdictions that recognize copyright laws, the author or authors
-> of this software dedicate any and all copyright interest in the
-> software to the public domain. We make this dedication for the benefit
-> of the public at large and to the detriment of our heirs and
-> successors. We intend this dedication to be an overt act of
-> relinquishment in perpetuity of all present and future rights to this
-> software under copyright law.
+> The copyright notices in the Software and this entire statement, including
+> the above license grant, this restriction and the following disclaimer,
+> must be included in all copies of the Software, in whole or in part, and
+> all derivative works of the Software, unless such copies or derivative
+> works are solely in the form of machine-executable object code generated by
+> a source language processor.
 > 
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-> IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-> OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-> ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-> OTHER DEALINGS IN THE SOFTWARE.
-> 
-> For more information, please refer to <http://unlicense.org/>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+> SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+> FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+> ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+> DEALINGS IN THE SOFTWARE.
 
 [vecLib]:https://developer.apple.com/library/mac/documentation/Performance/Conceptual/vecLib/Reference/reference.html
 [GNU Fortran]:http://gcc.gnu.org/fortran/
@@ -219,6 +207,6 @@ welcome, as are simple emails of gratitude, or ([unlicensed][]) pull requests!
 [Boost]:http://www.boost.org/doc/libs/1_55_0/libs/preprocessor/doc/index.html 
 [OpenBLAS]:http://www.openblas.net/
 [MKL]:http://software.intel.com/en-us/intel-mkl
-[unlicensed]:http://unlicense.org
 [blasbug]:http://www.macresearch.org/lapackblas-fortran-106
+[boost]:http://www.boost.org/users/license.html
 

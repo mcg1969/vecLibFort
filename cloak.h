@@ -1,11 +1,19 @@
 /*
- * Paul Fultz II's "Cloak": a mini preprocessor library
- * See: https://github.com/pfultz2/Cloak/blob/master/cloak.h
- * (Why not use Boost.Preprocessor? This was all I needed!)
- * We're working on clarifying the copright for this one. The
- * original repository has no mention of a copyright, but we
- * have reached out to the owner.
- */
+
+  Cloak
+  https://github.com/pfultz2/Cloak
+  A mini preprocessor library
+  Copyright (c) 2012-2014 Paul Fultz II  
+  
+  Use, modification and distribution is subject to the Boost Software 
+  License, Version 1.0. See the accompanying file LICENSE or
+
+      http://www.booost.org/LICENSE_1_0.txt
+
+  Permission granted by the author to include this file in vecLibFort
+  under the terms of this license.
+
+*/
 
 #define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
 #define PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
