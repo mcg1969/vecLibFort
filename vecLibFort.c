@@ -159,7 +159,7 @@ static void loadlib(void)
 {
   static const char* veclib_loc = VECLIB_FILE;
   DEBUG( "Loading library: %s\n", veclib_loc )
-  veclib = dlopen (veclib_loc, RTLD_LOCAL | RTLD_NOLOAD | RTLD_FIRST);
+  veclib = dlopen (veclib_loc, RTLD_LOCAL | RTLD_FIRST);
   if ( veclib == 0 ) {
     fprintf( stderr, "Failed to open vecLib library; aborting.\n   Location: %s\n", veclib );
     abort ();
