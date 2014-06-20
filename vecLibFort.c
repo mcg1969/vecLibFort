@@ -182,7 +182,7 @@ c_ ## type fname( VOIDA(n) ) \
 }
 
 #define CPLX_CALL(type,name,n) \
-typedef void (*f_ ## name)( VOIDS(INC(n)) ); \
+typedef void (*ft_ ## name)( VOIDS(INC(n)) ); \
 static void *fp_ ## name = 0; \
 CPLX_CALL_(type,name,name,n) \
 CPLX_CALL_(type,name ## _,name,n)
@@ -222,6 +222,9 @@ D2F_CALL(slantp,6)
 D2F_CALL(slantr,8)
 D2F_CALL(slapy2,2)
 D2F_CALL(slapy3,3)
+
+CPLX_CALL(float,cladiv,2)
+CPLX_CALL(double,zladiv,2)
 
 #if defined(VECLIBFORT_DYNBLAS) || defined(VECLIBFORT_INTERPOSE)
 
