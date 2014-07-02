@@ -28,7 +28,9 @@
 #define INC_6 7
 #define INC_7 8
 #define INC_8 9
-#define INC_9 9
+#define INC_9 10
+#define INC_10 11
+#define INC_11 12
 
 #define DEC(x) PRIMITIVE_CAT(DEC_, x)
 #define DEC_0 0
@@ -41,6 +43,8 @@
 #define DEC_7 6
 #define DEC_8 7
 #define DEC_9 8
+#define DEC_10 9
+#define DEC_11 10  
 
 #define EXPR_S(s) PRIMITIVE_CAT(EXPR_, s)
 #define EXPR_0(...) __VA_ARGS__
@@ -53,7 +57,10 @@
 #define EXPR_7(...) __VA_ARGS__
 #define EXPR_8(...) __VA_ARGS__
 #define EXPR_9(...) __VA_ARGS__
-
+#define EXPR_10(...) __VA_ARGS__
+#define EXPR_11(...) __VA_ARGS__ 
+#define EXPR_12(...) __VA_ARGS__
+  
 #define CHECK_N(x, n, ...) n
 #define CHECK(...) CHECK_N(__VA_ARGS__, 0,)
 

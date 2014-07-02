@@ -31,16 +31,12 @@ static const char* dynamic_msg = "Entering dynamic %s replacement\n";
 static const char* static_msg = "Entering static %s replacement\n";
 #define DEBUG_S(x) DEBUG( static_msg, x )
 #define DEBUG_D(x) DEBUG( dynamic_msg, x )
+
 #else
 #define DEBUG(...)
 #define DEBUG_S(x)
 #define DEBUG_D(x)
 #endif
-
-typedef struct interpose_t_ {
-  const void *replacement;
-  const void *original;
-} interpose_t;
 
 typedef struct c_float_ {
   float r, i;
@@ -69,6 +65,11 @@ typedef struct c_double_ {
  *    sdot  -> my_sdot
  */
 
+typedef struct interpose_t_ {
+  const void *replacement;
+  const void *original;
+} interpose_t;
+
 #define INTERPOSE(name) \
 __attribute__((used)) interpose_t interpose_ ## name [] \
 __attribute__((section ("__DATA,__interpose"))) = \
@@ -93,10 +94,61 @@ static c_ ## type my_ ## name ( VOIDA(n) ) \
 } \
 INTERPOSE(name)
 
+/*
+ * DYNAMIC BLAS SUBSTITUTION
+ *
+ * For the interpose library we need to use the same techniques for the BLAS
+ * as we do for the LAPACK routines. However, because we have CBLAS versions
+ * available to use, we can use the wrappers already created in "static.h"
+ * by prepending them with the "my_" prefixes.
+ */
+
+#define BLS_CALL(type,name,n) \
+extern type name( VOIDS(n) ); \
+extern type name ## _( VOIDS(n) ); \
+INTERPOSE(name)
+  
+#define ADD_PREFIX
+#include "static.h"
+#undef ADD_PREFIX
+
+BLS_CALL(float,sdsdot,6)
+BLS_CALL(float,sdot,5)
+BLS_CALL(float,snrm2,3)
+BLS_CALL(float,sasum,3)
+BLS_CALL(c_float,cdotu,5)
+BLS_CALL(c_float,cdotc,5)
+BLS_CALL(float,scnrm2,3)
+BLS_CALL(float,scasum,3)
+BLS_CALL(c_double,zdotu,5)
+BLS_CALL(c_double,zdotc,5)
+#if defined(VECLIBFORT_SGEMV)
+BLS_CALL(void,sgemv,11)
+#endif
+
 #else
 
 /*
- * DYNAMIC SUBSTITUTION MODE
+ * STATIC BLAS SUBSTITUTION
+ * 
+ * For BLAS functions, we have access to CBLAS versions of each function.
+ * So the hoops we need to jump through to resolve the name clashes in the
+ * dynamic substitution mode can be avoided. Instead, we simply create the
+ * replacement functions to call the CBLAS counterparts instead.
+ *
+ * To void duplicating code, we include the functions in "static.h" twice:
+ * once for the functions with trailing underscores (e.g., "sdot_"), and once 
+ * without (e.g., "sdot"). In theory, we could create just one replacement
+ * with two aliases, but clang has thus far been uncooperative. Any assistance 
+ * on this matter would be appreciated.
+ */
+
+#include "static.h"
+#define ADD_UNDERSCORE
+#include "static.h"
+
+/*
+ * DYNAMIC LAPACK SUBSTITUTION
  * 
  * In this mode, we give our functions identical names, and rely on link
  * order to ensure that these take precedence over those declared in vecLib.
@@ -225,43 +277,5 @@ D2F_CALL(slapy3,3)
 
 CPLX_CALL(float,cladiv,2)
 CPLX_CALL(double,zladiv,2)
-
-#if defined(VECLIBFORT_DYNBLAS) || defined(VECLIBFORT_INTERPOSE)
-
-D2F_CALL(sdsdot,6)
-D2F_CALL(sdot,5)
-D2F_CALL(snrm2,3)
-D2F_CALL(sasum,3)
-
-CPLX_CALL(float,cdotu,5)
-CPLX_CALL(float,cdotc,5)
-D2F_CALL(scnrm2,3)
-D2F_CALL(scasum,3)
-
-CPLX_CALL(double,zdotu,5)
-CPLX_CALL(double,zdotc,5)
-
-#else
-
-/*
- * STATIC SUBSTITUTION MODE
- * 
- * For BLAS functions, we have access to CBLAS versions of each function.
- * So the hoops we need to jump through to resolve the name clashes in the
- * dynamic substitution mode can be avoided. Instead, we simply create the
- * replacement functions to call the CBLAS counterparts instead.
- *
- * To void duplicating code, we've stored these functions in "static.h",
- * and load them twice---once for the functions with trailing underscores
- * (e.g., "sdot_"), and once without (e.g., "sdot"). In theory, we could
- * create just one replacement with two aliases, but clang has thus far been
- * uncooperative. Any assistance on this matter would be appreciated.
- */
-
-#include "static.h"
-#define ADD_UNDERSCORE
-#include "static.h"
-
-#endif
 
 

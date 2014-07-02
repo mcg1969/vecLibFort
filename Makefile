@@ -11,11 +11,14 @@ STATIC=$(LIBRARY).a
 DYNAMIC=$(LIBRARY).dylib
 PRELOAD=$(LIBRARY)I.dylib
 INCLUDES=cloak.h static.h
+DEPEND=$(INCLUDES) Makefile
 
 all: static dynamic preload
 static: $(STATIC)
 dynamic: $(DYNAMIC)
 preload: $(PRELOAD)
+
+$(OBJECT): $(DEPEND)
 
 $(STATIC): $(OBJECT)
 	ar -cru $@ $^
@@ -26,8 +29,8 @@ $(DYNAMIC): $(OBJECT)
 		-Wl,-reexport_framework -Wl,vecLib \
 		-install_name $(LIBDIR)/$@
 
-$(PRELOAD): $(SOURCE) $(HEADERS)
-	clang -shared -DVECLIBFORT_INTERPOSE -o $@ -O $(SOURCE) \
+$(PRELOAD): $(SOURCE) $(DEPEND)
+	clang -shared $(CFLAGS) -DVECLIBFORT_INTERPOSE -o $@ -O $(SOURCE) \
 		-Wl,-reexport_framework -Wl,vecLib \
 		-install_name $(LIBDIR)/$@
 
