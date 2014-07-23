@@ -16,7 +16,20 @@
 
 #include <stdio.h>
 #include "cloak.h"
-#include <vecLib/cblas.h>
+/* Don't load the CLAPACK header, because we are using a different calling
+   convention for the replaced functions than the ones listed there. */
+#define __CLAPACK_H
+#include <Accelerate/Accelerate.h>
+
+/* Add a SGEMV fix for Mavericks. See
+  http://www.openradar.me/radar?id=5864367807528960 */
+
+#if !defined(VECLIBFORT_SGEMV)
+#include <AvailabilityMacros.h>
+#if defined(MAC_OS_X_VERSION_10_9) && !defined(MAC_OS_X_VERSION_10_10)
+#define VECLIBFORT_SGEMV
+#endif
+#endif
 
 #define VOIDS_(s,i,id) COMMA_IF(i) void*
 #define VOIDS(n) IF(n)(EXPR_S(0)(REPEAT_S(0,DEC(n),VOIDS_,~)),void)
@@ -177,7 +190,7 @@ BLS_CALL(void,sgemv,11)
 #include <stdio.h>
 #include <stdlib.h>
 
-#define VECLIB_FILE "/System/Library/Frameworks/vecLib.framework/vecLib"
+#define VECLIB_FILE "/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/vecLib"
 
 static void * veclib = 0;
 

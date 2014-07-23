@@ -1,9 +1,9 @@
-## A GNU Fortran interface to Apple's vecLib BLAS/LAPACK
+## A GNU Fortran interface to Apple's Accelerate/vecLib BLAS/LAPACK
 
 ### Introduction
 
 vecLibFort is lightweight but flexible "shim" designed to rectify
-the incompatibilities between the vecLib BLAS and LAPACK libraries
+the incompatibilities between the Accelerate/vecLib BLAS and LAPACK libraries
 shipped with Mac OS X and FORTRAN code compiled with modern compilers
 such as [GNU Fortran][].
 
@@ -89,16 +89,16 @@ standard dynamic library using ``-lvecLibFort``. Of course, if you installed
 the library in a non-standard location, you will need an ``-L<path>`` linker
 flag as well.
 
-If you use this apporach, you do *not* need to add ``-framework vecLib``
-as well. That is because vecLibFort is built to re-export all of vecLib's
-symbols, even those it does not "fix". Thus it serves as a *full replacement*
-for vecLib.
+If you use this apporach, you do *not* need to add ``-framework vecLib`` or
+``-framework Accelerate`` as well. That is because vecLibFort is built to 
+re-export all of Accelerate's symbols, even those it does not "fix". Thus it 
+serves as a *full replacement* for vecLib/Accelerate.
 
 #### Static library / direct inclusion: ``libvecLibFort.a``
 
 For new projects, feel free to add ``vecLibFort.c``, ``static.h``, and
 ``cloak.h`` to your project, or link with the static library. You will also
-need to link ``-framework vecLib``.
+need to link ``-framework vecLib`` or ``-framework Accelerate``.
 
 <a name="preloaded"></a>
 #### Preloaded (interposing) library: ``libvecLibFortI.dylib``

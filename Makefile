@@ -26,12 +26,12 @@ $(STATIC): $(OBJECT)
 
 $(DYNAMIC): $(OBJECT)
 	clang -shared -o $@ $^ \
-		-Wl,-reexport_framework -Wl,vecLib \
+		-Wl,-reexport_framework -Wl,Accelerate \
 		-install_name $(LIBDIR)/$@
 
 $(PRELOAD): $(SOURCE) $(DEPEND)
 	clang -shared $(CFLAGS) -DVECLIBFORT_INTERPOSE -o $@ -O $(SOURCE) \
-		-Wl,-reexport_framework -Wl,vecLib \
+		-Wl,-reexport_framework -Wl,Accelerate \
 		-install_name $(LIBDIR)/$@
 
 install: all
@@ -44,6 +44,6 @@ clean:
 	rm -f $(OBJECT) $(STATIC) $(DYNAMIC) $(PRELOAD)
 
 check: tester.f90 $(OBJECT)
-	gfortran -o tester -O $^ -framework vecLib
+	gfortran -o tester -O $^ -framework Accelerate 
 	./tester
 
