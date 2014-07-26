@@ -20,15 +20,15 @@
    convention for the replaced functions than the ones listed there. */
 #define __CLAPACK_H
 #include <Accelerate/Accelerate.h>
+#include <AvailabilityMacros.h>
 
 /* Add a SGEMV fix for Mavericks. See
   http://www.openradar.me/radar?id=5864367807528960 */
 
-#if !defined(VECLIBFORT_SGEMV)
-#include <AvailabilityMacros.h>
-#if defined(MAC_OS_X_VERSION_10_9) && !defined(MAC_OS_X_VERSION_10_10)
+#if !defined(VECLIBFORT_SGEMV) && \
+    defined(MAC_OS_X_VERSION_10_9) && \
+    MAC_OS_X_VERSION_MIN_ALLOWED >= MAC_OS_X_VERSION_10_9      
 #define VECLIBFORT_SGEMV
-#endif
 #endif
 
 #define VOIDS_(s,i,id) COMMA_IF(i) void*
@@ -259,7 +259,6 @@ D2F_CALL(clange,6)
 D2F_CALL(clangt,5)
 D2F_CALL(clanhb,7)
 D2F_CALL(clanhe,6)
-D2F_CALL(clanhf,6)
 D2F_CALL(clanhp,5)
 D2F_CALL(clanhs,5)
 D2F_CALL(clanht,4)
@@ -269,11 +268,9 @@ D2F_CALL(clansy,6)
 D2F_CALL(clantb,8)
 D2F_CALL(clantp,6)
 D2F_CALL(clantr,8)
-D2F_CALL(scsum1,3)
 
-D2F_CALL(slamch,1)
+D2F_CALL(scsum1,3)
 D2F_CALL(slaneg,6)
-D2F_CALL(slamc3,2)
 D2F_CALL(slangb,7)
 D2F_CALL(slange,6)
 D2F_CALL(slangt,5)
@@ -287,6 +284,14 @@ D2F_CALL(slantp,6)
 D2F_CALL(slantr,8)
 D2F_CALL(slapy2,2)
 D2F_CALL(slapy3,3)
+D2F_CALL(slamch,1)
+D2F_CALL(slamc3,2)
+
+#if defined(MAC_OS_X_VERSION_10_7) && \
+    MAC_OS_X_VERSION_MIN_ALLOWED >= MAC_OS_X_VERSION_10_7
+D2F_CALL(clanhf,6)
+D2F_CALL(slansf,6)
+#endif
 
 CPLX_CALL(float,cladiv,2)
 CPLX_CALL(double,zladiv,2)
