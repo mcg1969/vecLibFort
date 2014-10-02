@@ -27,7 +27,7 @@
 
 #if !defined(VECLIBFORT_SGEMV) && \
     defined(MAC_OS_X_VERSION_10_9) && \
-    MAC_OS_X_VERSION_MIN_ALLOWED >= MAC_OS_X_VERSION_10_9      
+    MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_9      
 #define VECLIBFORT_SGEMV
 #endif
 
@@ -270,7 +270,10 @@ D2F_CALL(clantp,6)
 D2F_CALL(clantr,8)
 
 D2F_CALL(scsum1,3)
+#if defined(MAC_OS_X_VERSION_10_6) && \
+    MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
 D2F_CALL(slaneg,6)
+#endif
 D2F_CALL(slangb,7)
 D2F_CALL(slange,6)
 D2F_CALL(slangt,5)
@@ -288,7 +291,7 @@ D2F_CALL(slamch,1)
 D2F_CALL(slamc3,2)
 
 #if defined(MAC_OS_X_VERSION_10_7) && \
-    MAC_OS_X_VERSION_MIN_ALLOWED >= MAC_OS_X_VERSION_10_7
+    MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
 D2F_CALL(clanhf,6)
 D2F_CALL(slansf,6)
 #endif
