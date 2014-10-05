@@ -51,13 +51,9 @@ static const char* static_msg = "Entering static %s replacement\n";
 #define DEBUG_D(x)
 #endif
 
-typedef struct c_float_ {
-  float r, i;
-} c_float;
-
-typedef struct c_double_ {
-  double r, i;
-} c_double;
+#include <complex.h>
+typedef float complex c_float;
+typedef double complex c_double;
 
 #ifdef VECLIBFORT_INTERPOSE
 
