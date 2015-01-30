@@ -103,7 +103,7 @@ STATIC void FNAME(sgemv)( const char* trans, const int* m, const int* n,
   enum CBLAS_TRANSPOSE T;
   switch ( trans[0] ) {
     case 'T': case 't':
-      if ( (long)X % 32 == 0 ) { T = CblasTrans; break; }
+      if ( ((intptr_t)X|(intptr_t)A|(intptr_t)Y)%32 == 0 ) { T = CblasTrans; break; }
       /* Implement as alpha * X^T * A + beta * Y^T */
       cblas_sgemm( CblasColMajor, CblasNoTrans, CblasNoTrans, 1, *n, *m, *alpha, X, *incX, A, *ldA, *beta, Y, *incY );
       return;
