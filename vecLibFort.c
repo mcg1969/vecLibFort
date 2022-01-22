@@ -19,6 +19,7 @@
 /* Don't load the CLAPACK header, because we are using a different calling
    convention for the replaced functions than the ones listed there. */
 #define __CLAPACK_H
+#include "vecLib-760.100.h"
 #include <Accelerate/Accelerate.h>
 #include <AvailabilityMacros.h>
 

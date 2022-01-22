@@ -63,7 +63,7 @@ One solution is to force GNU Fortran to adopt the older, F2C-style return
 value convention, using the ``-ff2c`` flag. If that solution is sufficient
 for you, then I encourage you to adopt it. Unfortunately, this may not be
 possible if there is other code or other libraries that you rely upon that
-assume the default GNU Fotran convention. And don't forget to rewrite your
+assume the default GNU Fortran convention. And don't forget to rewrite your
 C code according to the F2C return value conventions.
 
 The approach taken by vecLibFort is to provide a thin translation layer
