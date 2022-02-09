@@ -35,10 +35,10 @@ $(PRELOAD): $(SOURCE) $(DEPEND)
 		-install_name $(LIBDIR)/$@
 
 install: all
-	mkdir -p $(LIBDIR)
-	cp -f $(STATIC) $(LIBDIR)
-	cp -f $(DYNAMIC) $(LIBDIR)
-	cp -f $(PRELOAD) $(LIBDIR)
+	mkdir -p $(DESTDIR)$(LIBDIR)
+	cp -f $(STATIC) $(DESTDIR)$(LIBDIR)
+	cp -f $(DYNAMIC) $(DESTDIR)$(LIBDIR)
+	cp -f $(PRELOAD) $(DESTDIR)$(LIBDIR)
 
 clean:
 	rm -f $(OBJECT) $(STATIC) $(DYNAMIC) $(PRELOAD)
