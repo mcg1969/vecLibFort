@@ -14,7 +14,7 @@ c = transpose(reshape([(3,2),(2,4),(1,6), (4,6),(5,4),(6,2)],[3,2]))
 write(*,*) 'If the return value interface is fixed, none of these values will'
 write(*,*) 'be zero, nor will they be nonsensically large or small. On the'
 write(*,*) 'other hand, if the translation is incorrect, it is more likely'
-write(*,*) 'that this program will carsh.'
+write(*,*) 'that this program will crash.'
 write(*,*) ' '
 
 write(*,*) sdot(6,a(1,:),1,a(2,:),1), sdsdot(6,2.0,a(1,:),1,a(2,:),1), &
