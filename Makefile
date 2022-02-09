@@ -1,7 +1,9 @@
 PREFIX=/usr/local
 LIBDIR=$(PREFIX)/lib
 
+CC=clang
 CFLAGS=-O
+FC=gfortran
 
 NAME=vecLibFort
 SOURCE=$(NAME).c
@@ -25,12 +27,12 @@ $(STATIC): $(OBJECT)
 	ranlib $@
 
 $(DYNAMIC): $(OBJECT)
-	clang -shared -o $@ $^ \
+	$(CC) -shared -o $@ $^ \
 		-Wl,-reexport_framework -Wl,Accelerate \
 		-install_name $(LIBDIR)/$@
 
 $(PRELOAD): $(SOURCE) $(DEPEND)
-	clang -shared $(CFLAGS) -DVECLIBFORT_INTERPOSE -o $@ -O $(SOURCE) \
+	$(CC) -shared $(CFLAGS) -DVECLIBFORT_INTERPOSE -o $@ -O $(SOURCE) \
 		-Wl,-reexport_framework -Wl,Accelerate \
 		-install_name $(LIBDIR)/$@
 
@@ -44,6 +46,6 @@ clean:
 	rm -f $(OBJECT) $(STATIC) $(DYNAMIC) $(PRELOAD)
 
 check: tester.f90 $(OBJECT)
-	gfortran -o tester -O $^ -framework Accelerate 
+	$(FC) -o tester -O $^ -framework Accelerate
 	./tester
 
