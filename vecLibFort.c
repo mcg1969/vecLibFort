@@ -19,9 +19,11 @@
 /* Don't load the CLAPACK header, because we are using a different calling
    convention for the replaced functions than the ones listed there. */
 #define __CLAPACK_H
-#include "vecLib-760.100.h"
-#include <Accelerate/Accelerate.h>
 #include <AvailabilityMacros.h>
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
+#include "vecLib-760.100.h"
+#endif
+#include <Accelerate/Accelerate.h>
 
 /* Add a SGEMV fix for Mavericks. See
   http://www.openradar.me/radar?id=5864367807528960 */
