@@ -30,7 +30,7 @@ $(DYNAMIC): $(OBJECT)
 		-install_name $(LIBDIR)/$@
 
 $(PRELOAD): $(SOURCE) $(DEPEND)
-	clang -shared $(CFLAGS) -DVECLIBFORT_INTERPOSE -o $@ -O $(SOURCE) \
+	clang -shared $(CFLAGS) -DVECLIBFORT_INTERPOSE -o $@ $(SOURCE) \
 		-Wl,-reexport_framework -Wl,Accelerate \
 		-install_name $(LIBDIR)/$@
 
